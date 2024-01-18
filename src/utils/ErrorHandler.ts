@@ -1,11 +1,13 @@
-import ErrorHandler from "../utils/ErrorHandler";
 
-export default (err, req, res, next) => {
-  err.statusCode = err.statusCode || 500;
-  err.message = err.message || "Internal server Error";
+class ErrorHandler extends Error{
+  statusCode: number;
+  constructor(message: string,statusCode: number){
+      super(message);
+      this.statusCode = statusCode
 
-  res.status(err.statusCode).json({
-    success: false,
-    message: err.message,
-  });
-};
+      Error.captureStackTrace(this,this.constructor);
+
+  }  
+}
+
+export default ErrorHandler

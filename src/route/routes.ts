@@ -1,46 +1,80 @@
 import express, { Router, Request, Response ,NextFunction} from 'express';
-//import ErrorHandler from "../utils/ErrorHandler";
 import User from '../database/model/user';
+import upload from '../utils/multerconfig'; 
+import handleMulterError from '../utils/multererror';
+import ErrorHandler from '../utils/ErrorHandler';
 const router: Router = express.Router();
 
-router.post('/reg', async (req: Request, res: Response, next: NextFunction)=> {
-    try {
-      const { firstName, email, password }: { firstName: string; email: string; password: string } = req.body;
-  
-      // Validation
-      if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required fields.' });
-      }
-  
-      // Validate email format (you can use a library like validator for more comprehensive validation)
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        return res.status(400).json({ message: 'Invalid email format.' });
-      }
-  
-      // Check if the email is already in use
-      const existingUser = await User.findOne({ where: { email } });
-  
-      if (existingUser) {
-        return res.status(400).json({ message: 'Email is already in use.' });
-      }
-  
-      // Create a new user record in the database
-      const newUser = await User.create({
-        firstName,
-        email,
-        password,
-        id: 0, // Provide a default or use the actual ID if applicable
-        createdAt: new Date(), // Provide the creation date
-      });
+router.post('/upload', handleMulterError,upload.single('Image'), async (req: Request, res: Response, next: NextFunction):Promise<void> => {
+  try {
+    const { name } = req.body;
 
   
-      res.status(201).json({ message: 'User registered successfully.', user: newUser });
-    } catch (error) {
-      console.error('Error:', error);
-      return next()
+    if (!req.file) {
+      res.status(400).json({ error: 'No file provided' });
+      return;
     }
-  });
+
+    const Image = {
+      data: req.file.buffer,
+      contentType: req.file.mimetype,
+    };
+
+    const newUser = new User({ name,Image });
+    const savedUser = await newUser.save();
+    res.status(201).json({
+      success: true,
+      message: 'image uploaded succesfully',
+      data: {
+        id: savedUser._id,
+      },
+    });
+    
+  } catch (error) {
+    
+    console.error('Error uploading image:');
+    res.status(500).json({ error: 'ERROR  UPLOADING IMAGE' });
+  }
+});
+
+router.get('/get_image/:userId', async(req: Request, res: Response, next: NextFunction):Promise<void>  => {
+  try {
+    const userId = req.params.userId;
+    const user = await User.findById(userId);
+
+    if (!user || !user.Image) {
+      res.status(404).json({ error: 'User or image not found' });
+    }
+
+    // Respond with a secure URL format (base64 encoding)
+    const base64Image = Buffer.from(user!.Image.data).toString('base64');
+    const imageUrl = `data:${user!.Image.contentType};base64,${base64Image}`;
+    res.json({ imageUrl });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// routes/imageRoutes.ts
+router.get('/get_all_images', async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const users = await User.find({});
+
+    if (!users) {
+      throw new ErrorHandler('No images found', 404);
+    }
+
+    const imagesWithIds = users.map((user) => {
+      const base64Image = Buffer.from(user.Image.data).toString('base64');
+      const imageUrl = `data:${user.Image.contentType};base64,${base64Image}`;
+      return { id: user._id, imageUrl };
+    });
+
+    res.json({ imagesWithIds });
+  } catch (error) {
+    next(error);
+  }
+});
 
   export default router
   

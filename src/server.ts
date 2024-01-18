@@ -1,6 +1,7 @@
-import   dotenv from 'dotenv';
+import 'dotenv/config';
+import  dotenv from 'dotenv';
 import user from './route/routes';
-import sequelize from './database/pgconfig/pgconfig'; 
+import Dbconnection from './database/dbconfig/dbconfig' 
 import express,{Application, Request, Response, NextFunction} from "express";
 import cookieParser from 'cookie-parser';
 import bodyParser from "body-parser";
@@ -26,17 +27,7 @@ app.use((req:Request, res:Response, next:NextFunction)=>{
   res.header("Access-Control-Allow-Headers", "auth-token, Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-
-async function syncDatabase() {
-    try {
-      await sequelize.sync();
-      console.log('Database synchronized.');
-    } catch (error) {
-      console.error('Database synchronization failed:', error);
-    }
-  }
-
-syncDatabase();
+Dbconnection()
 
 app.use("/api/v2/user", user)
 app.listen(process.env.PORT,()=>{

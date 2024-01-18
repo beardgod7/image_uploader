@@ -4,39 +4,70 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-//import ErrorHandler from "../utils/ErrorHandler";
 const user_1 = __importDefault(require("../database/model/user"));
+const multerconfig_1 = __importDefault(require("../utils/multerconfig"));
+const multererror_1 = __importDefault(require("../utils/multererror"));
+const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const router = express_1.default.Router();
-router.post('/reg', async (req, res, next) => {
+router.post('/upload', multererror_1.default, multerconfig_1.default.single('Image'), async (req, res, next) => {
     try {
-        const { firstName, email, password } = req.body;
-        // Validation
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required fields.' });
+        const { name } = req.body;
+        if (!req.file) {
+            res.status(400).json({ error: 'No file provided' });
+            return;
         }
-        // Validate email format (you can use a library like validator for more comprehensive validation)
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({ message: 'Invalid email format.' });
-        }
-        // Check if the email is already in use
-        const existingUser = await user_1.default.findOne({ where: { email } });
-        if (existingUser) {
-            return res.status(400).json({ message: 'Email is already in use.' });
-        }
-        // Create a new user record in the database
-        const newUser = await user_1.default.create({
-            firstName,
-            email,
-            password,
-            id: 0, // Provide a default or use the actual ID if applicable
-            createdAt: new Date(), // Provide the creation date
+        const Image = {
+            data: req.file.buffer,
+            contentType: req.file.mimetype,
+        };
+        const newUser = new user_1.default({ name, Image });
+        const savedUser = await newUser.save();
+        res.status(201).json({
+            success: true,
+            message: 'image uploaded succesfully',
+            data: {
+                id: savedUser._id, // Assuming _id is the generated ID by MongoDB
+            },
         });
-        res.status(201).json({ message: 'User registered successfully.', user: newUser });
+        //res.json({ message: 'Image uploaded successfully' });
     }
     catch (error) {
-        console.error('Error:', error);
-        return next();
+        console.error('Error uploading image:');
+        res.status(500).json({ error: 'ERROR  UPLOADING IMAGE' });
+    }
+});
+router.get('/get_image/:userId', async (req, res, next) => {
+    try {
+        const userId = req.params.userId;
+        const user = await user_1.default.findById(userId);
+        if (!user || !user.Image) {
+            res.status(404).json({ error: 'User or image not found' });
+        }
+        // Respond with a secure URL format (base64 encoding)
+        const base64Image = Buffer.from(user.Image.data).toString('base64');
+        const imageUrl = `data:${user.Image.contentType};base64,${base64Image}`;
+        res.json({ imageUrl });
+    }
+    catch (error) {
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+// routes/imageRoutes.ts
+router.get('/get_all_images', async (req, res, next) => {
+    try {
+        const users = await user_1.default.find({});
+        if (!users) {
+            throw new ErrorHandler_1.default('No images found', 404);
+        }
+        const imagesWithIds = users.map((user) => {
+            const base64Image = Buffer.from(user.Image.data).toString('base64');
+            const imageUrl = `data:${user.Image.contentType};base64,${base64Image}`;
+            return { id: user._id, imageUrl };
+        });
+        res.json({ imagesWithIds });
+    }
+    catch (error) {
+        next(error);
     }
 });
 exports.default = router;
