@@ -5,11 +5,11 @@
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",          // Output directory for compiled JavaScript files
-    "rootDir": "./src",           // Root directory for source TypeScript files
+    "outDir": "./dist",          
+    "rootDir": "./src",           
     "noImplicitReturns": true,
     "noImplicitAny": false,
   },
   "include": ["src/**/*.ts", "src/index.ts", "src/learn"],
   "exclude": ["node_modules"]
-}
+} 
