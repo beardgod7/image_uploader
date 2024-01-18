@@ -10,10 +10,12 @@ const upload = multer({
       cb(null, true);
     } else {
         
-      cb(new Error('Invalid file type. Only JPG, PNG, and GIF are allowed.'));
+      cb(new Error(' Only JPG, PNG, and GIF are allowed.'));
     }
   },
 });
+
+
 
 export default upload;
  

@@ -1,12 +1,13 @@
 import mongoose from 'mongoose';
 import express, { Router, Request, Response ,NextFunction} from 'express';
 import Picture from '../database/model/picture';
-import upload from '../utils/multerconfig'; 
 import handleMulterError from '../utils/multererror';
+import upload from '../utils/multerconfig'; 
+
 import ErrorHandler from '../utils/ErrorHandler';
 const router: Router = express.Router();
 
-router.post('/upload', handleMulterError,upload.single('Image'), async (req: Request, res: Response, next: NextFunction):Promise<void> => {
+router.post('/upload', handleMulterError, upload.single('Image'), async (req: Request, res: Response, next: NextFunction):Promise<void> => {
   try {
     const { name } = req.body;
 
@@ -30,14 +31,16 @@ router.post('/upload', handleMulterError,upload.single('Image'), async (req: Req
         id: savedPicture._id,
       },
     }); 
-  } catch (error) {
-    const errorMessage = (error as Error)?.message || 'Unknown error';
-    if (errorMessage === 'Invalid file type. Only JPG, PNG, and GIF are allowed.') {
-      res.status(200).json({ error:'invalid file type file must be JPG,PNG and GIF'});
-    } else {
-      console.error('Error uploading image:', errorMessage);
-      res.status(200).json({ error: 'Error uploading image. Please try again later.' });
+  } catch (error:any) {
+    let errorMessage = 'Error uploading image';
+    
+    if (error.message === 'Invalid file type. Only JPG, PNG, and GIF are allowed.') {
+      errorMessage = 'Invalid file type. Only JPG, PNG, and GIF are allowed.';
+      res.status(200).json({ error: errorMessage });
     }
+
+    console.error('Error uploading image:', error.message);
+    
   }
 });
 
@@ -61,7 +64,7 @@ router.get('/get_image/:pictureId', async(req: Request, res: Response, next: Nex
     const imageUrl = `data:${picture!.Image.contentType};base64,${base64Image}`;
     res.json({ imageUrl });
   } catch (error) {
-    res.status(200).json({ error: '' });
+    res.status(200).json({ error: 'system error' });
   }
 });
 

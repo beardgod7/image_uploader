@@ -8,7 +8,6 @@ export default (err, req, res, next) => {
     const message = `Resources not found with this id.. Invalid ${err.path}`;
     err = new ErrorHandler(message, 400);
   }
-
   res.status(err.statusCode).json({
     success: false,
     message: err.message,

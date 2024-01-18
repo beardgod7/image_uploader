@@ -3,21 +3,20 @@ import multer, { MulterError } from 'multer';
 import ErrorHandler from '../utils/ErrorHandler';
 
 const handleMulterError = (
-    err: MulterError,
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ): void => {
-    if (err instanceof MulterError) {
-      const multerError = new ErrorHandler(`Invalid file type. ${err.message}`, 400);
-      res.status(multerError.statusCode).json({
-        success: false,
-        message: multerError.message,
-      });
-    } else {
-      
-      next(err);
-    }
-  };
-  
+  err: MulterError,
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (err instanceof multer.MulterError) {
+    res.status(400).json({
+      success: false,
+      message: "errorr"
+    });
+  } else {
+    next(err);
+  }
+};
+
 export default handleMulterError;
+

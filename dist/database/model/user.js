@@ -24,12 +24,12 @@ var __importStar = (this && this.__importStar) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importStar(require("mongoose"));
-const userSchema = new mongoose_1.Schema({
+const pictureSchema = new mongoose_1.Schema({
     name: String,
     Image: {
         data: Buffer,
         contentType: String,
     },
 });
-const User = mongoose_1.default.model('User', userSchema);
-exports.default = User;
+const Picture = mongoose_1.default.model('Picture', pictureSchema);
+exports.default = Picture;
