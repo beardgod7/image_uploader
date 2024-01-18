@@ -7,7 +7,6 @@ const multer_1 = require("multer");
 const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const handleMulterError = (err, req, res, next) => {
     if (err instanceof multer_1.MulterError) {
-        // Handle Multer-specific errors
         const multerError = new ErrorHandler_1.default(`Invalid file type. ${err.message}`, 400);
         res.status(multerError.statusCode).json({
             success: false,
@@ -15,7 +14,6 @@ const handleMulterError = (err, req, res, next) => {
         });
     }
     else {
-        // Pass other errors to the next middleware
         next(err);
     }
 };

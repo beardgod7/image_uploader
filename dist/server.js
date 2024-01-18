@@ -28,7 +28,7 @@ app.use((req, res, next) => {
     next();
 });
 (0, dbconfig_1.default)();
-app.use("/api/v2/user", routes_1.default);
+app.use("/api/v2/picture", routes_1.default);
 app.listen(process.env.PORT, () => {
     console.log(`app is running on http://localhost:${process.env.PORT}`);
 });

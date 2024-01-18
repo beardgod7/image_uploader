@@ -3,71 +3,62 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
 const express_1 = __importDefault(require("express"));
-const user_1 = __importDefault(require("../database/model/user"));
+const picture_1 = __importDefault(require("../database/model/picture"));
 const multerconfig_1 = __importDefault(require("../utils/multerconfig"));
 const multererror_1 = __importDefault(require("../utils/multererror"));
-const ErrorHandler_1 = __importDefault(require("../utils/ErrorHandler"));
 const router = express_1.default.Router();
 router.post('/upload', multererror_1.default, multerconfig_1.default.single('Image'), async (req, res, next) => {
     try {
         const { name } = req.body;
         if (!req.file) {
-            res.status(400).json({ error: 'No file provided' });
+            res.status(200).json({ error: 'No file provided' });
             return;
         }
         const Image = {
             data: req.file.buffer,
             contentType: req.file.mimetype,
         };
-        const newUser = new user_1.default({ name, Image });
-        const savedUser = await newUser.save();
+        const newPicture = new picture_1.default({ name, Image });
+        const savedPicture = await newPicture.save();
         res.status(201).json({
             success: true,
             message: 'image uploaded succesfully',
             data: {
-                id: savedUser._id, // Assuming _id is the generated ID by MongoDB
+                id: savedPicture._id,
             },
         });
-        //res.json({ message: 'Image uploaded successfully' });
     }
     catch (error) {
-        console.error('Error uploading image:');
-        res.status(500).json({ error: 'ERROR  UPLOADING IMAGE' });
+        const errorMessage = (error === null || error === void 0 ? void 0 : error.message) || 'Unknown error';
+        if (errorMessage === 'Invalid file type. Only JPG, PNG, and GIF are allowed.') {
+            res.status(200).json({ error: 'invalid file type file must be JPG,PNG and GIF' });
+        }
+        else {
+            console.error('Error uploading image:', errorMessage);
+            res.status(200).json({ error: 'Error uploading image. Please try again later.' });
+        }
     }
 });
-router.get('/get_image/:userId', async (req, res, next) => {
+router.get('/get_image/:pictureId', async (req, res, next) => {
     try {
-        const userId = req.params.userId;
-        const user = await user_1.default.findById(userId);
-        if (!user || !user.Image) {
-            res.status(404).json({ error: 'User or image not found' });
+        const pictureId = req.params.pictureId;
+        if (!mongoose_1.default.Types.ObjectId.isValid(pictureId)) {
+            res.status(200).json({ error: 'Invalid pictureId format' });
+            return;
+        }
+        const picture = await picture_1.default.findById(pictureId);
+        if (!picture || !picture.Image) {
+            res.status(200).json({ error: 'image not found' });
         }
         // Respond with a secure URL format (base64 encoding)
-        const base64Image = Buffer.from(user.Image.data).toString('base64');
-        const imageUrl = `data:${user.Image.contentType};base64,${base64Image}`;
+        const base64Image = Buffer.from(picture.Image.data).toString('base64');
+        const imageUrl = `data:${picture.Image.contentType};base64,${base64Image}`;
         res.json({ imageUrl });
     }
     catch (error) {
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-// routes/imageRoutes.ts
-router.get('/get_all_images', async (req, res, next) => {
-    try {
-        const users = await user_1.default.find({});
-        if (!users) {
-            throw new ErrorHandler_1.default('No images found', 404);
-        }
-        const imagesWithIds = users.map((user) => {
-            const base64Image = Buffer.from(user.Image.data).toString('base64');
-            const imageUrl = `data:${user.Image.contentType};base64,${base64Image}`;
-            return { id: user._id, imageUrl };
-        });
-        res.json({ imagesWithIds });
-    }
-    catch (error) {
-        next(error);
+        res.status(200).json({ error: '' });
     }
 });
 exports.default = router;

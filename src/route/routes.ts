@@ -1,5 +1,6 @@
+import mongoose from 'mongoose';
 import express, { Router, Request, Response ,NextFunction} from 'express';
-import User from '../database/model/user';
+import Picture from '../database/model/picture';
 import upload from '../utils/multerconfig'; 
 import handleMulterError from '../utils/multererror';
 import ErrorHandler from '../utils/ErrorHandler';
@@ -11,7 +12,7 @@ router.post('/upload', handleMulterError,upload.single('Image'), async (req: Req
 
   
     if (!req.file) {
-      res.status(400).json({ error: 'No file provided' });
+      res.status(200).json({ error: 'No file provided' });
       return;
     }
 
@@ -20,59 +21,47 @@ router.post('/upload', handleMulterError,upload.single('Image'), async (req: Req
       contentType: req.file.mimetype,
     };
 
-    const newUser = new User({ name,Image });
-    const savedUser = await newUser.save();
+    const newPicture = new Picture({ name,Image });
+    const savedPicture = await newPicture.save();
     res.status(201).json({
       success: true,
       message: 'image uploaded succesfully',
       data: {
-        id: savedUser._id,
+        id: savedPicture._id,
       },
-    });
-    
+    }); 
   } catch (error) {
-    
-    console.error('Error uploading image:');
-    res.status(500).json({ error: 'ERROR  UPLOADING IMAGE' });
+    const errorMessage = (error as Error)?.message || 'Unknown error';
+    if (errorMessage === 'Invalid file type. Only JPG, PNG, and GIF are allowed.') {
+      res.status(200).json({ error:'invalid file type file must be JPG,PNG and GIF'});
+    } else {
+      console.error('Error uploading image:', errorMessage);
+      res.status(200).json({ error: 'Error uploading image. Please try again later.' });
+    }
   }
 });
 
-router.get('/get_image/:userId', async(req: Request, res: Response, next: NextFunction):Promise<void>  => {
+router.get('/get_image/:pictureId', async(req: Request, res: Response, next: NextFunction):Promise<void>  => {
   try {
-    const userId = req.params.userId;
-    const user = await User.findById(userId);
+    const pictureId = req.params.pictureId;
 
-    if (!user || !user.Image) {
-      res.status(404).json({ error: 'User or image not found' });
+    if (!mongoose.Types.ObjectId.isValid(pictureId)) {
+      res.status(200).json({ error: 'Invalid pictureId format' });
+      return;
+    }
+
+    const picture = await Picture.findById(pictureId);
+
+    if (!picture || !picture.Image) {
+      res.status(200).json({ error: 'image not found' });
     }
 
     // Respond with a secure URL format (base64 encoding)
-    const base64Image = Buffer.from(user!.Image.data).toString('base64');
-    const imageUrl = `data:${user!.Image.contentType};base64,${base64Image}`;
+    const base64Image = Buffer.from(picture!.Image.data).toString('base64');
+    const imageUrl = `data:${picture!.Image.contentType};base64,${base64Image}`;
     res.json({ imageUrl });
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-// routes/imageRoutes.ts
-router.get('/get_all_images', async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const users = await User.find({});
-
-    if (!users) {
-      throw new ErrorHandler('No images found', 404);
-    }
-
-    const imagesWithIds = users.map((user) => {
-      const base64Image = Buffer.from(user.Image.data).toString('base64');
-      const imageUrl = `data:${user.Image.contentType};base64,${base64Image}`;
-      return { id: user._id, imageUrl };
-    });
-
-    res.json({ imagesWithIds });
-  } catch (error) {
-    next(error);
+    res.status(200).json({ error: '' });
   }
 });
 

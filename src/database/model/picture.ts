@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface UserDocument extends Document {
+interface PictureDocument extends Document {
   name: string;
   Image: {
     data: Buffer;
@@ -8,7 +8,7 @@ interface UserDocument extends Document {
   };
 }
 
-const userSchema = new Schema({
+const pictureSchema = new Schema({
   name: String,
   Image: {
     data: Buffer,
@@ -16,9 +16,9 @@ const userSchema = new Schema({
   },
 });
 
-const User = mongoose.model<UserDocument>('User', userSchema);
+const Picture = mongoose.model<PictureDocument>('Picture', pictureSchema);
 
-export default User;
+export default Picture;
 
 
 

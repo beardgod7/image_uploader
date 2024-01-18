@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import  dotenv from 'dotenv';
-import user from './route/routes';
+import picture from './route/routes';
 import Dbconnection from './database/dbconfig/dbconfig' 
 import express,{Application, Request, Response, NextFunction} from "express";
 import cookieParser from 'cookie-parser';
@@ -9,6 +9,7 @@ import cors from "cors";
 
 
 const app:Application = express()
+
 app.use(cors())
 app.use(express.json());
 app.use(cookieParser());
@@ -29,7 +30,7 @@ app.use((req:Request, res:Response, next:NextFunction)=>{
 });
 Dbconnection()
 
-app.use("/api/v2/user", user)
+app.use("/api/v2/picture", picture)
 app.listen(process.env.PORT,()=>{
     console.log( `app is running on http://localhost:${process.env.PORT}`) 
 })
