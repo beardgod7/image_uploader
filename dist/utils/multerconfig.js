@@ -10,10 +10,12 @@ const upload = (0, multer_1.default)({
     fileFilter: (req, file, cb) => {
         const allowedMimes = ['image/jpeg', 'image/png', 'image/gif'];
         if (allowedMimes.includes(file.mimetype)) {
-            cb(null, true);
+            cb(null, true); // File type allowed
         }
         else {
-            cb(new Error(' Only JPG, PNG, and GIF are allowed.'));
+            const error = new Error('Only JPG, PNG, and GIF are allowed.');
+            error.name = 'FileTypeError'; // Custom error name
+            cb(error, false); // File type not allowed
         }
     },
 });

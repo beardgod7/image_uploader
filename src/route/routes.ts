@@ -39,16 +39,16 @@ router.post('/upload', handleMulterError, upload.single('Image'), async (req: Re
         id: savedPicture._id,
       },
     }); 
-  } catch (error:any) {
+  } catch (error: any) {
     let errorMessage = 'Error uploading image';
-    
-    if (error.message === 'Invalid file type. Only JPG, PNG, and GIF are allowed.') {
-      errorMessage = 'Invalid file type. Only JPG, PNG, and GIF are allowed.';
-      res.status(200).json({ error: errorMessage });
-    }
 
-    console.error('Error uploading image:', error.message);
+    if (error.name === 'FileTypeError') {
+      errorMessage = 'Invalid file type. Only JPG, PNG, and GIF are allowed.';
+      res.status(400).json({ error: errorMessage });
+    } else {
+      console.error('Error uploading image:', error.message);
     
+    }
   }
 });
 
@@ -74,7 +74,7 @@ router.get('/get_image/:pictureId', async(req: Request, res: Response, next: Nex
       res.status(200).json({ error: 'image not found' });
     }
 
-    // Respond with a secure URL format (base64 encoding)
+    
     const base64Image = Buffer.from(picture!.Image.data).toString('base64');
     const imageUrl = `data:${picture!.Image.contentType};base64,${base64Image}`;
     res.json({ imageUrl });
