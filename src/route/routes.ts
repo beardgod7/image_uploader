@@ -7,6 +7,14 @@ import upload from '../utils/multerconfig';
 import ErrorHandler from '../utils/ErrorHandler';
 const router: Router = express.Router();
 
+/**
+ * Uploads an image.
+ * @param {string} name - The name associated with the image.
+ * @param {File} Image - The image file to be uploaded (type: file).
+ * @returns {Promise<object>} The response object.
+ * @throws Will throw an error if the file type is invalid or if there's an internal server error.
+ */
+
 router.post('/upload', handleMulterError, upload.single('Image'), async (req: Request, res: Response, next: NextFunction):Promise<void> => {
   try {
     const { name } = req.body;
@@ -43,6 +51,13 @@ router.post('/upload', handleMulterError, upload.single('Image'), async (req: Re
     
   }
 });
+
+/**
+ * Gets an image by ID.
+ * @param {string} pictureId - The ID of the picture to retrieve.
+ * @returns {Promise<void>} The response containing the image URL.
+ * @throws Will throw an error if the pictureId format is invalid, if the image is not found, or if there's a system error.
+ */
 
 router.get('/get_image/:pictureId', async(req: Request, res: Response, next: NextFunction):Promise<void>  => {
   try {

@@ -9,6 +9,13 @@ const picture_1 = __importDefault(require("../database/model/picture"));
 const multererror_1 = __importDefault(require("../utils/multererror"));
 const multerconfig_1 = __importDefault(require("../utils/multerconfig"));
 const router = express_1.default.Router();
+/**
+ * Uploads an image.
+ * @param {string} name - The name associated with the image.
+ * @param {File} Image - The image file to be uploaded (type: file).
+ * @returns {Promise<object>} The response object.
+ * @throws Will throw an error if the file type is invalid or if there's an internal server error.
+ */
 router.post('/upload', multererror_1.default, multerconfig_1.default.single('Image'), async (req, res, next) => {
     try {
         const { name } = req.body;
@@ -39,6 +46,12 @@ router.post('/upload', multererror_1.default, multerconfig_1.default.single('Ima
         console.error('Error uploading image:', error.message);
     }
 });
+/**
+ * Gets an image by ID.
+ * @param {string} pictureId - The ID of the picture to retrieve.
+ * @returns {Promise<void>} The response containing the image URL.
+ * @throws Will throw an error if the pictureId format is invalid, if the image is not found, or if there's a system error.
+ */
 router.get('/get_image/:pictureId', async (req, res, next) => {
     try {
         const pictureId = req.params.pictureId;

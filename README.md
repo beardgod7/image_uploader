@@ -1,83 +1,109 @@
-# typescript_crud
-User Management System with TypeScript and PostgreSQL
-This project implements a simple user management system using TypeScript and PostgreSQL. It includes functionality for user creation, login, updating user details, getting user information, and user deletion.
+# Image Upload API
 
-Prerequisites
-Before getting started, make sure you have the following installed on your machine:
+This TypeScript API allows users to upload and retrieve images.
 
-Node.js: Download and Install Node.js
-TypeScript: Install using npm with npm install -g typescript
-PostgreSQL: Download and Install PostgreSQL
-Setup
-Clone the repository:
+## 1. Upload Image
 
-bash
-Copy code
-git clone https://github.com/your-username/your-repo.git
-Install dependencies:
+### Endpoint
 
-bash
-Copy code
-cd your-repo
-npm install
-Configure PostgreSQL:
 
-Create a new database for the project.
-Update the database connection details in src/config/db.ts.
-Build the TypeScript code:
+### Request
 
-bash
-Copy code
-npm run build
-Run the application:
+- **Method:** `POST`
+- **Endpoint:** `/upload`
+- **Content-Type:** `multipart/form-data`
 
-bash
-Copy code
-npm start
-Usage
-The following operations are supported by the API:
+### Request Parameters
 
-1. Create User
-Endpoint: POST /api/users
+- `name` (type: string) - The name associated with the image.
+- `Image` (type: file) - The image file to be uploaded.
 
-Request Body:
+### Responses
 
-json
-Copy code
-{
-  "username": "example",
-  "password": "password123"
-}
-2. User Login
-Endpoint: POST /api/login
+- `201 Created`: Image uploaded successfully.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "success": true,
+      "message": "Image uploaded successfully",
+      "data": {
+        "id": "12345"
+      }
+    }
+    ```
+- `200 OK`: No file provided.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "error": "No file provided"
+    }
+    ```
+- `200 OK`: Invalid file type. Only JPG, PNG, and GIF are allowed.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "error": "Invalid file type. Only JPG, PNG, and GIF are allowed."
+    }
+    ```
+- `500 Internal Server Error`: Error uploading image.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "error": "system error"
+    }
+    ```
 
-Request Body:
+## 2. Get Image by ID
 
-json
-Copy code
-{
-  "username": "example",
-  "password": "password123"
-}
-3. Update User
-Endpoint: PUT /api/users/:id
+### Endpoint
 
-Request Body:
 
-json
-Copy code
-{
-  "username": "newusername",
-  "password": "newpassword"
-}
-4. Get User
-Endpoint: GET /api/users/:id
+### Request
 
-5. Delete User
-Endpoint: DELETE /api/users/:id
+- **Method:** `GET`
+- **Endpoint:** `/get_image/:pictureId`
 
-Contributing
-Feel free to contribute to this project by opening issues or creating pull requests. Your feedback is highly appreciated.
+### URL Parameters
 
-License
-This project is licensed under the MIT License - see the LICENSE.md file for details
+- `pictureId` (type: string) - The ID of the picture to retrieve.
+
+### Responses
+
+- `200 OK`: Image retrieved successfully.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "imageUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/4QA..."
+    }
+    ```
+- `200 OK`: Invalid pictureId format.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "error": "Invalid pictureId format"
+    }
+    ```
+- `200 OK`: Image not found.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "error": "Image not found"
+    }
+    ```
+- `500 Internal Server Error`: System error.
+  - **Response Format:** JSON
+  - **Example:**
+    ```json
+    {
+      "error": "system error"
+    }
+    ```
+
+Feel free to use this TypeScript-specific documentation as a starting point and customize it further based on your specific needs.
